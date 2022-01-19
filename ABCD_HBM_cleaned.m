@@ -1,3 +1,4 @@
+% this is code used in paper https://doi.org/10.1002/hbm.25772
 %% initial parameters
 
 father_dir='/home/zwang/Documents/Nils/ABCD';
