@@ -181,10 +181,21 @@ for i = 1: height(label_table)% per label_fmri
     catch
         continue
     end
+    
+
     censor_array=censor_data{4:end,2};%first 3 volumes were removed
     censor_ind=1:length(censor_array);
     censor_ind=censor_ind(censor_array>0);
-  
+
+    if label_table{i,'EEG_missing'}==1;    
+        sw_amp=nan(1,length(censor_array));sw_time=nan(1,length(censor_array));sw_freq=nan(1,length(censor_array));
+          sw_amp_mat{i}=sw_amp(censor_ind);
+            sw_time_mat{i}=sw_time(censor_ind);
+            sw_freq_mat{i}=sw_freq(censor_ind);
+        
+        continue;
+    end
+
     sleepscore_table=readtable(fullfile('/raid/common/sleep1/derivatives/sleep_scoring_mr/',label_table{i,'subject'},...
         label_table{i,'session'},[label_table{i,'subject'},'_',label_table{i,'session'},'_task-sleep_run-',...
         label_table{i,'label_fmri'},'.txt']));
@@ -195,7 +206,7 @@ for i = 1: height(label_table)% per label_fmri
         ['report_',label_table{i,'session'}],[label_table{i,'subject'},'_',label_table{i,'session'},'_clean_swa_results_thr0.mat']),'swa_results')
     load(fullfile('/misc/imeel/yangf7/matlab/SW_detection/derivatives_icarej025mod_altbadch',label_table{i,'subject'},...
         ['report_',label_table{i,'session'}],[label_table{i,'subject'},'_',label_table{i,'session'},'.mat']),'N_EPOCHE')
-    sw_amp=nan(1,length(censor_array));sw_time=nan(1,length(censor_array));sw_freq=nan(1,length(censor_array));
+    sw_amp=zeros(1,length(censor_array));sw_time=zeros(1,length(censor_array));sw_freq=zeros(1,length(censor_array));
     if label_table{i,'EEG_sess'}>1
     fmri_start=fmri_start+sum(N_EPOCHE(1:label_table{i,'EEG_sess'}-1))*250;
     end
@@ -814,7 +825,7 @@ example_mat=[];
 for ii=1:21
 example_mat(ii,1)=mean(sw_amp_sub(vpath_all_zscore{18,1}==ii),'omitnan');
 
-example_mat(ii,2)=mean(sw_freq_sub(vpath_all_zscore{18,1}==ii),'omitnan');
+example_mat(ii,2)=sum(sw_freq_sub(vpath_all_zscore{18,1}==ii),'omitnan')./length(sw_freq_sub(vpath_all_zscore{18,1}==ii));
 
 example_mat(ii,3)=mean(Card_night2(vpath_all_zscore{18,1}==ii,1),'omitnan');
 
@@ -872,25 +883,25 @@ example_mat(ii,21)=std(eog_night2(vpath_all_zscore{18,1}==ii,2),'omitnan')./...
 
 end
 
-font_size=18;
+font_size=20;
 figure;
 subplot(6,1,1)
-plot(1:21,example_mat(I2,7))
+plot(1:21,example_mat(I2,2),'LineWidth',2)
 set(gca, 'XTick', 1:21); % center x-axis ticks on bins
 set(gca, 'TickLength',[0 0])
-set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'XTickLabel', indx(1,I2),'FontSize',font_size); % set x-axis labels
 ylabel('Slow Wave Density','FontSize',font_size)
 xlim([0 22])
-ylim([0 0.9])
+ylim([0 2])
 
 
 
 subplot(6,1,2)
-errorbar(1:21,example_mat(I2,14),example_mat(I2,16))
+errorbar(1:21,example_mat(I2,14),example_mat(I2,16),'LineWidth',2)
 
 set(gca, 'XTick', 1:21); % center x-axis ticks on bins
 set(gca, 'TickLength',[0 0])
-set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'XTickLabel', indx(1,I2),'FontSize',font_size); % set x-axis labels
 ylabel('Variation in PPG AMP','FontSize',font_size)
 % xlabel('HMM states')
 xlim([0 22])
@@ -898,11 +909,11 @@ xlim([0 22])
 
 
 subplot(6,1,3)
-errorbar(1:21,example_mat(I2,15),example_mat(I2,17))
+errorbar(1:21,example_mat(I2,15),example_mat(I2,17),'LineWidth',2)
 
 set(gca, 'XTick', 1:21); % center x-axis ticks on bins
 set(gca, 'TickLength',[0 0])
-set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'XTickLabel', indx(1,I2),'FontSize',font_size); % set x-axis labels
 ylabel('Variation in RespRVT','FontSize',font_size)
 % xlabel('HMM states')
 xlim([0 22])
@@ -921,10 +932,10 @@ xlim([0 22])
 
 
 subplot(6,1,4)
-errorbar(1:21,example_mat(I2,4),example_mat(I2,6))
+errorbar(1:21,example_mat(I2,4),example_mat(I2,6),'LineWidth',2)
 set(gca, 'XTick', 1:21); % center x-axis ticks on bins
 set(gca, 'TickLength',[0 0])
-set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'XTickLabel', indx(1,I2),'FontSize',font_size); % set x-axis labels
 ylabel('Variation in Heart Rates','FontSize',font_size)
 % xlabel('HMM states')
 xlim([0 22])
@@ -952,10 +963,10 @@ xlim([0 22])
 
 
 subplot(6,1,5)
-errorbar(1:21,example_mat(I2,8),example_mat(I2,10))
+errorbar(1:21,example_mat(I2,8),example_mat(I2,10),'LineWidth',2)
 set(gca, 'XTick', 1:21); % center x-axis ticks on bins
 set(gca, 'TickLength',[0 0])
-set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'XTickLabel', indx(1,I2),'FontSize',font_size); % set x-axis labels
 ylabel('Time of Run (TR)','FontSize',font_size)
 % xlabel('HMM states')
 xlim([0 22])
@@ -963,10 +974,10 @@ xlim([0 22])
 
 
 subplot(6,1,6)
-errorbar(1:21,example_mat(I2,9),example_mat(I2,11))
+errorbar(1:21,example_mat(I2,9),example_mat(I2,11),'LineWidth',2)
 set(gca, 'XTick', 1:21); % center x-axis ticks on bins
 set(gca, 'TickLength',[0 0])
-set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'XTickLabel', indx(1,I2),'FontSize',font_size); % set x-axis labels
 ylabel('Time of Night (TR)','FontSize',font_size)
 % xlabel('HMM states')
 xlim([0 22])
@@ -1519,7 +1530,7 @@ end
 
 
 net_n_sep={'Un','DMN','VIS','FPN','REW','DAN','VAN','SAL','CON','dSMN','lSMN','AUD','PMN','MTL','pHIP','BG','THAL','CB'};
-
+net_n_sep_hip={'Un','DMN','VIS','FPN','REW','DAN','VAN','SAL','CON','dSMN','lSMN','AUD','PMN','MTL','aHIP','pHIP','BG','THAL','CB'};
 figure
 
 for n_state=1:21
@@ -1661,5 +1672,236 @@ set(gca,'box','off')
 
 set(gcf,'Position',[8000 8000 2000 2000])
 
+
+
+%% seperate subcortical to BG/aHIP/phip/THA
+
+net_code=unique(ROI_list{:,'Network_Label_v4'});
+
+w_wch=zeros(length(net_code),1);%
+b_wch=zeros(length(net_code),1);
+bw_wch=zeros(length(net_code)*(length(net_code)-1)/2,1);
+
+
+net_mat=ones(length(net_code),length(net_code));
+net_mat_tril=tril(net_mat,-1);
+% net_mat_tril=[net_mat_tril,zeros(length(net_code),1)];
+net_mat_diag=eye(length(net_code),length(net_code));
+% net_mat_diag=[net_mat_diag,zeros(length(net_code),1)];
+corr_mat_sep=nan(19,20,21);
+temp_mat=corr_diff;
+for k=1:size(temp_mat,3) 
+
+
+    for n_net = 1:length(net_code)
+        net_nodes=ROI_list{ROI_list{:,'Network_Label_v4'}==net_code(n_net),'ROI_num'};
+            m_net=temp_mat(net_nodes,net_nodes,k);
+            m_net=tril(m_net,-1);
+    %         m_net_s(:,n_sub)=m_net(m_net>0);
+            ind_mat_temp=ones(numel(net_nodes),numel(net_nodes));
+            ind_mat_temp=tril(ind_mat_temp,-1);
+            ind_mat_temp=ind_mat_temp.*~isnan(m_net);
+            w_wch(n_net)=nansum(nansum(m_net))/sum(sum(ind_mat_temp));
+        
+    end
+
+
+    for n_net = 1:length(net_code)
+        net_nodes=ROI_list{ROI_list{:,'Network_Label_v4'}==net_code(n_net),'ROI_num'};
+        net_nodes_2=ROI_list{ROI_list{:,'Network_Label_v4'}~=net_code(n_net),'ROI_num'};
+            m_net=temp_mat(net_nodes,net_nodes_2,k);
+            ind_mat_temp=ones(numel(net_nodes),numel(net_nodes_2));
+            ind_mat_temp=ind_mat_temp.*~isnan(m_net);
+%             ind_mat_temp=tril(ind_mat,-1);
+            b_wch(n_net)=nansum(nansum(m_net))/sum(ind_mat_temp(:));
+        
+    end
+
+
+
+
+  n=1;
+    for n_net = 1:length(net_code)-1
+        for n_net2= n_net+1:length(net_code)
+            net_nodes=ROI_list{ROI_list{:,'Network_Label_v4'}==net_code(n_net),'ROI_num'};
+            net_nodes_2=ROI_list{ROI_list{:,'Network_Label_v4'}==net_code(n_net2),'ROI_num'};
+                m_net=temp_mat(net_nodes,net_nodes_2,k);
+                ind_mat_temp=ones(numel(net_nodes),numel(net_nodes_2));
+                ind_mat_temp=ind_mat_temp.*~isnan(m_net);
+
+%                 ind_mat_temp=tril(ind_mat,-1);
+    
+                bw_wch(n)=nansum(nansum(m_net))/sum(ind_mat_temp(:));
+              
+            
+         n=n+1;
+        end
+        
+    end
+
+
+
+
+       mat_test=zeros(length(net_code),length(net_code));
+       mat_test(net_mat_diag>0)=w_wch;
+       mat_test(net_mat_tril>0)=bw_wch;
+       mat_test(:,length(net_code)+1)=b_wch;
+       corr_mat_sep(:,:,k)=mat_test;
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+% net_n_sep={'Un','DMN','VIS','FPN','REW','DAN','VAN','SAL','CON','dSMN','lSMN','AUD','PMN','MTL','pHIP','BG','THAL','CB'};
+net_n_sep_hip={'Un','DMN','VIS','FPN','REW','DAN','VAN','SAL','CON','dSMN','lSMN','AUD','PMN','MTL','aHIP','pHIP','BG','THAL','CB'};
+figure
+
+for n_state=1:21
+subplot(3,7,n_state)
+imagesc(corr_mat_sep(1:18,1:18,I2(n_state)));
+% h=gca;
+% h.XRuler.Axle.LineStyle='none';
+% Create title
+title(['State ',num2str(I2(n_state))],'FontSize',14);
+set(gca,'TickLength',[0, 0])
+c = colorbar;
+
+c.FontSize=12;
+clim([-0.5 0.5])
+colormap(bluewhitered)
+
+c.TickLength=0;
+c.Box='off';
+xtickangle(90)
+set(gca, 'XTick', 1:18); % center x-axis ticks on bins
+set(gca, 'YTick', 1:18); % center y-axis ticks on bins
+set(gca, 'XTickLabel', strrep([net_n_sep_hip],'_','\_')); % set x-axis labels
+set(gca, 'YTickLabel', strrep([net_n_sep_hip],'_','\_')); % set y-axis label
+set(gca,'box','off') 
+end
+set(gcf,'Position',[8000 8000 2000 2000])
+
+
+mat_inx=ones(18,18);
+mat_inx=tril(mat_inx);
+mat_inx=[mat_inx,zeros(18,1)];
+
+for  n_state=1:21
+temp_val=corr_mat_sep(:,:,n_state).*mat_inx;
+cor_val(n_state,:)=temp_val(temp_val~=0);
+
+end
+
+r=corr(cor_val');
+
+r_vis=r(I2,I2);
+r_vis=tril(r_vis,-1);
+
+
+
+
+
+
+figure
+
+imagesc(r_vis)
+set(gca,'TickLength',[0, 0])
+c = colorbar;
+
+c.FontSize=12;
+clim([-1 1])
+colormap(bluewhitered)
+
+c.TickLength=0;
+c.Box='off';
+% xtickangle(90)
+set(gca, 'XTick', 1:21); % center x-axis ticks on bins
+set(gca, 'YTick', 1:21); % center y-axis ticks on bins
+set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'YTickLabel', indx(1,I2)); % set y-axis label
+set(gca,'box','off') 
+set(gcf,'Position',[8000 8000 2000 2000])
+
+
+cor_val=[];
+mat_inx300=ones(300,300);
+mat_inx300=tril(mat_inx300);
+% mat_inx=[mat_inx,zeros(18,1)];
+
+for  n_state=1:21
+temp_val=corr_diff(:,:,n_state).*mat_inx300;
+cor_val(n_state,:)=temp_val(temp_val~=0);
+
+end
+
+r=corr(cor_val');
+
+r_vis300=r(I2,I2);
+% r_vis300=tril(r_vis300,-1);
+
+
+figure
+
+imagesc(r_vis300)
+set(gca,'TickLength',[0, 0])
+c = colorbar;
+
+c.FontSize=12;
+clim([-1 1])
+colormap(bluewhitered)
+
+c.TickLength=0;
+c.Box='off';
+% xtickangle(90)
+set(gca, 'XTick', 1:21); % center x-axis ticks on bins
+set(gca, 'YTick', 1:21); % center y-axis ticks on bins
+set(gca, 'XTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'YTickLabel', indx(1,I2)); % set y-axis label
+set(gca,'box','off') 
+set(gcf,'Position',[8000 8000 2000 2000])
+
+
+
+
+
+net_act=[];
+
+for ii=1:length(net_code)
+
+    net_nodes=ROI_list{ROI_list{:,'Network_Label_v4'}==net_code(ii),'ROI_num'};
+    net_act(:,ii)=mean(mean_act(:,net_nodes),2);
+
+
+end
+
+figure;
+imagesc(net_act(I2,:));
+
+title(['Mean Activation'],'FontSize',14);
+c = colorbar;
+
+c.FontSize=12;
+% clim([-0.5 0.5])
+colormap(bluewhitered)
+
+c.TickLength=0;
+c.Box='off';
+xtickangle(45)
+set(gca, 'YTick', 1:21); % center x-axis ticks on bins
+set(gca, 'XTick', 1:18); % center y-axis ticks on bins
+set(gca, 'YTickLabel', indx(1,I2)); % set x-axis labels
+set(gca, 'XTickLabel', strrep([net_n_sep],'_','\_')); % set y-axis label
+set(gca,'box','off') 
+
+set(gcf,'Position',[8000 8000 2000 2000])
 
 
